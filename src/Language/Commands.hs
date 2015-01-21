@@ -88,10 +88,25 @@ create args ss = do
 		createSingle arg = do
 			writeFile arg ""
 
---
+--copy emptt directories to a target directory
 cpDir :: Command
-cpDir = undefined
+cpDir args ss 
+	| length args == 1 = do
+		return ss
+	| otherwise = do
+		let curr = path ss (head args)
+		check <- doesDirectoryExist curr
+		if not check then do
+			cpDir (tail args) (writeError ss ("cpdir: " ++ (head args) ++ "is not a valid cpdir target"))
+			else do
+				content <- getDirectoryContents curr
+				if not (Prelude.null content) then
+					 cpDir (tail args) (writeError ss ("cpdir: " ++ (head args) ++ "is not a valid cpdir target"))
+					 else do
+					 	createDirectory ((path ss (last args)) ++ "/" ++ (head args))
+					 	rmDir (tail args) ss
 
+--remove one or more empty directories
 rmDir :: Command
 rmDir args ss
 	| Prelude.null args = do
@@ -109,9 +124,15 @@ rmDir args ss
 					 	removeDirectory curr
 					 	rmDir (tail args) ss
 
-
+--create one or more new directories
 mkDir :: Command 
-mkDir =undefined
+mkDir args ss
+	| Prelude.null args = do
+		return ss
+	| otherwise = do
+		createDirectory (path ss (head args))
+		mkDir (tail args) ss
+
 
 --create file path with respect to executing directory
 path :: ScriptState -> String -> FilePath
