@@ -16,6 +16,6 @@ runInteractive :: IO ()
 runInteractive = do
 	hSetBuffering stdout NoBuffering
 	state <- createEmptyScriptState
-	newState <- pwd ["proba"] state
+	newState <- cat ["README.md", "mirko.hash"] state
 	putStrLn (output newState)
 	return ()

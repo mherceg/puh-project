@@ -18,8 +18,8 @@ commands = M.fromList [
     ("mkdir", mkDir),
     ("pwd", pwd),
     ("ls", ls),
-    ("cd", cd)
---    ("cat", cat)
+    ("cd", cd),
+    ("cat", cat)
     ]
 
 exit :: Command
@@ -133,12 +133,13 @@ mkDir args ss
 		createDirectory (path ss (head args))
 		mkDir (tail args) ss
 
+--Print working directory
 pwd :: Command
 pwd _ ss = do
 	pt <- canonicalizePath (wd ss)
 	return $ writeError ss (pt)
 
-
+--list contents of a directory
 ls :: Command
 ls args ss
 	| Prelude.null args = ls' (wd ss)
@@ -155,12 +156,22 @@ ls args ss
 						printAll ss' [] = ss'
 						printAll ss' (x':xs) = printAll (writeError ss' x') xs
 
+--change directory
 cd :: Command
 cd args ss 
 	| Prelude.null args = do
 		return ScriptState {output = output ss, wd = "~", vartable = vartable ss}
 	| otherwise = do
 		return ScriptState {output = output ss, wd = (path ss (args!!0)), vartable = vartable ss}
+
+--concatenate files and print to standard output
+cat :: Command
+cat args ss
+	| Prelude.null args = do
+		return ss
+	| otherwise = do
+		content <- readFile (path ss (head args))
+		cat (tail args) (writeError ss content)
 
 --create file path with respect to executing directory
 path :: ScriptState -> String -> FilePath
