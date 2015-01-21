@@ -5,9 +5,11 @@ import Data.Char
 import Language.Exec
 import System.Directory
 import System.Exit
-import Data.List (intercalate, unfoldr)
+import System.Process
+--import Data.List (intercalate, unfoldr)
 import Numeric (showHex)
-import Data.ByteString as BS (readFile, unpack, ByteString)
+import Data.ByteString as BS (readFile, unpack)
+import System.Posix.Files
 -- A map of (command name, command pairs), used to abstract command
 -- execution and make adding new commands relatively easy
 commands :: M.Map String Command
@@ -24,7 +26,9 @@ commands = M.fromList [
     ("ls", ls),
     ("cd", cd),
     ("cat", cat),
-    ("hexdump", hexdump)
+    ("hexdump", hexdump),
+    ("ping", ping),
+    ("chmod", chmod)
     ]
 
 exit :: Command
@@ -184,6 +188,18 @@ hexdump args ss = do
 	content <- BS.readFile (path ss (args!!0))
 	return $ writeError ss $ concat $ Prelude.map ((flip showHex) "") $ BS.unpack content
 
+--change permissions for a file, args should be octal permissions for owner, group, others
+chmod :: Command
+chmod args ss = do
+	let perms = Prelude.foldr unionFileModes nullFileMode (analyze (args!!0))
+	setFileMode (path ss (args!!1)) perms
+	return ss
+	where
+		analyze p = Prelude.map (snd) $ Prelude.filter (\(a,_) -> a /= 0) 
+			$ zip (concat(Prelude.map (\x -> [((x `div` 4) `mod` 2), ((x `div` 2) `mod` 2), (x `mod` 2)] ) 
+				(Prelude.map digitToInt p)))
+			[ownerReadMode, ownerWriteMode, ownerExecuteMode, groupReadMode, groupWriteMode, groupExecuteMode, otherReadMode, otherWriteMode, otherExecuteMode]
+
 
 --create file path with respect to executing directory
 path :: ScriptState -> String -> FilePath
@@ -194,3 +210,9 @@ writeError :: ScriptState -> String -> ScriptState
 writeError ss message = 
 	ScriptState  {output = output ss ++ message,
 					wd = wd ss, vartable = vartable ss}
+
+--Perform an excellent ping command, all paramaters supported
+ping :: Command
+ping args ss = do
+	system ("ping " ++ (concat args))
+	return ss

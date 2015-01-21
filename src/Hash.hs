@@ -16,6 +16,6 @@ runInteractive :: IO ()
 runInteractive = do
 	hSetBuffering stdout NoBuffering
 	state <- createEmptyScriptState
-	newState <- hexdump ["README.md"] state
+	newState <- chmod ["777","proba"] state
 	putStrLn (output newState)
 	return ()

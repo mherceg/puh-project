@@ -21,5 +21,7 @@ executable puh-project
   build-depends:       base ==4.6.*,
                        directory ==1.*,
                        bytestring==0.10.4.1,
+                       process==1.2.1.0,
+                       unix==2.7.1.0,
                        containers
   ghc-options: -Wall
