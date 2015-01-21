@@ -11,11 +11,11 @@ commands = M.fromList [
     ("exit", exit),
     ("mv", move),
     ("cp", copy),
-    ("cpdir", copyDir),
     ("rm", remove),
---    ("rmdir", removeDir),
-    ("create", create)
---    ("mkdir", makeDir),
+    ("create", create),
+    ("cpdir", cpDir),
+    ("rmdir", rmDir),
+    ("mkdir", mkDir)
 --    ("pwd", pointWorkingDir),
 --    ("ls", list),
 --    ("cd", changeDir),
@@ -79,10 +79,6 @@ remove args ss
 				remove (tail args) (writeError ss ("rm: " ++ curr ++ "is not a valid target for remove."))
 
 
---
-copyDir :: Command
-copyDir = undefined
-
 --Creates one or more empty files
 create :: Command
 create args ss = do
@@ -91,6 +87,31 @@ create args ss = do
 	where
 		createSingle arg = do
 			writeFile arg ""
+
+--
+cpDir :: Command
+cpDir = undefined
+
+rmDir :: Command
+rmDir args ss
+	| Prelude.null args = do
+		return ss
+	| otherwise = do
+		let curr = path ss (head args)
+		check <- doesDirectoryExist curr
+		if not check then do
+			rmDir (tail args) (writeError ss ("rmdir: " ++ (head args) ++ "is not a valid rmdir target"))
+			else do
+				content <- getDirectoryContents curr
+				if not (Prelude.null content) then
+					 rmDir (tail args) (writeError ss ("rmdir: " ++ (head args) ++ "is not a valid rmdir target"))
+					 else do
+					 	removeDirectory curr
+					 	rmDir (tail args) ss
+
+
+mkDir :: Command 
+mkDir =undefined
 
 --create file path with respect to executing directory
 path :: ScriptState -> String -> FilePath
