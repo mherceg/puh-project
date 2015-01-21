@@ -203,43 +203,30 @@ chmod args ss = do
 				(Prelude.map digitToInt p)))
 			[ownerReadMode, ownerWriteMode, ownerExecuteMode, groupReadMode, groupWriteMode, groupExecuteMode, otherReadMode, otherWriteMode, otherExecuteMode]
 
---Grep command, supports -v(invert match) -i(ignore case) -o(only matching) -n(line numbers) and -c(count)
+--Grep command, supports -v(invert match) -o(only matching) -n(line numbers) and -c(count)
 grep :: Command
 grep args ss 
 	| length args > 2 =
 		if (head args) == "-v" then do
-			return ss
-		else if (head args) == "-i" then do
-			return ss
+			content <- Prelude.readFile (Language.Commands.path ss (last args)) 
+			return $ printAll ss $ Prelude.filter (\x -> not (isInfixOf (args!!1) x)) (lines content)
 		else if (head args) == "-o" then do
+			mh <- match (args!!1) (args!!2)
+			return $ printAll ss $ replicate (length mh) (args!!1)
 			return ss
 		else if (head args) == "-n" then do
-			return ss
+			matched <- match (head args) (Language.Commands.path ss (last args))
+			return $ printAll ss 
+				$ Prelude.map (\(a,b) -> (show a ++ b)) 
+				$ zip [1..] matched
 		else if (head args) == "-c" then do
-			return ss
+			mh <- match (args!!1) (args!!2)
+			return $ writeError ss (show (length mh))
 		else do
 			return ss
 	| otherwise = do
-		matched <- match (head args) (last args)
+		matched <- match (head args) (Language.Commands.path ss (last args))
 		return $ printAll ss matched
-
-
-{-grep args ss =
-	if length args > 2 then 
-		if (head args) == "-v" then do
-			return ss
-			else if (head args) == "-i" then do
-				return ss
-				else if (head args) == "-o" then do
-					return ss
-					else if (head args) == "-n" then do
-						return ss
-						else if (head args) == "-c" then do
-							return ss
-							else do
-								matched <- match (head args) (last args)
-								return $ printAll ss matched
--}
 
 printAll ss' [] = ss'
 printAll ss' (x':xs) = printAll (writeError ss' (x'++"\n")) xs
