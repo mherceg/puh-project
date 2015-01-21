@@ -1,9 +1,13 @@
 module Language.Commands where
 
 import Data.Map as M
+import Data.Char
 import Language.Exec
 import System.Directory
 import System.Exit
+import Data.List (intercalate, unfoldr)
+import Numeric (showHex)
+import Data.ByteString as BS (readFile, unpack, ByteString)
 -- A map of (command name, command pairs), used to abstract command
 -- execution and make adding new commands relatively easy
 commands :: M.Map String Command
@@ -19,7 +23,8 @@ commands = M.fromList [
     ("pwd", pwd),
     ("ls", ls),
     ("cd", cd),
-    ("cat", cat)
+    ("cat", cat),
+    ("hexdump", hexdump)
     ]
 
 exit :: Command
@@ -170,8 +175,28 @@ cat args ss
 	| Prelude.null args = do
 		return ss
 	| otherwise = do
-		content <- readFile (path ss (head args))
+		content <- Prelude.readFile (path ss (head args))
 		cat (tail args) (writeError ss content)
+
+--outputs a file in hexadecimal format
+hexdump :: Command
+hexdump args ss = do
+	content <- BS.readFile (path ss (args!!0))
+	putStrLn $ simpleHex content
+	return $ writeError ss $ concat $ Prelude.map ((flip showHex) "") $ BS.unpack content
+	return ss
+
+-- |'simpleHex' converts a 'ByteString' to a 'String' showing the octets
+-- grouped in 32-bit words.
+--
+-- Sample output
+--
+-- @4b c1 ad 8a  5b 47 d7 57@
+simpleHex :: BS.ByteString -> String
+simpleHex c = concat
+          $ Prelude.map ((flip showHex) "")
+          $ BS.unpack c
+
 
 --create file path with respect to executing directory
 path :: ScriptState -> String -> FilePath

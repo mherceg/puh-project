@@ -16,6 +16,6 @@ runInteractive :: IO ()
 runInteractive = do
 	hSetBuffering stdout NoBuffering
 	state <- createEmptyScriptState
-	newState <- cat ["README.md", "mirko.hash"] state
+	newState <- hexdump ["README.md"] state
 	putStrLn (output newState)
 	return ()

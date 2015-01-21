@@ -19,7 +19,7 @@ The task of this project is to implement **Hash**, a simple shell programmed in 
     - [ ] Comments (*2 pts*)
     - [ ] Variables (*3 pts*)
     - [x] `cat` command (*2 pts*)
-    - [x] `ls` command (*3 pts*)
+    - [x] `echo` command (*3 pts*)
 - [ ] Advanced functionality (*20% for 10 pts*)
     - [ ] `grep` (*4 pts*)
     - [ ] Piping (*5 pts*)
