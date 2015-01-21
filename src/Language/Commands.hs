@@ -15,10 +15,10 @@ commands = M.fromList [
     ("create", create),
     ("cpdir", cpDir),
     ("rmdir", rmDir),
-    ("mkdir", mkDir)
---    ("pwd", pointWorkingDir),
---    ("ls", list),
---    ("cd", changeDir),
+    ("mkdir", mkDir),
+    ("pwd", pwd),
+    ("ls", ls),
+    ("cd", cd)
 --    ("cat", cat)
     ]
 
@@ -133,6 +133,34 @@ mkDir args ss
 		createDirectory (path ss (head args))
 		mkDir (tail args) ss
 
+pwd :: Command
+pwd _ ss = do
+	pt <- canonicalizePath (wd ss)
+	return $ writeError ss (pt)
+
+
+ls :: Command
+ls args ss
+	| Prelude.null args = ls' (wd ss)
+	| otherwise = ls' (path ss (args !! 0))
+	where
+		ls' x = do
+			check <- doesDirectoryExist x
+			if not check then do
+				return $ writeError ss ("ls: " ++ x ++ "is not a valid target")
+				else do
+					files <- getDirectoryContents x
+					return $ printAll ss files
+					where
+						printAll ss' [] = ss'
+						printAll ss' (x':xs) = printAll (writeError ss' x') xs
+
+cd :: Command
+cd args ss 
+	| Prelude.null args = do
+		return ScriptState {output = output ss, wd = "~", vartable = vartable ss}
+	| otherwise = do
+		return ScriptState {output = output ss, wd = (path ss (args!!0)), vartable = vartable ss}
 
 --create file path with respect to executing directory
 path :: ScriptState -> String -> FilePath
