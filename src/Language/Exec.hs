@@ -20,7 +20,7 @@ data ScriptState = ScriptState { output :: String
 createEmptyScriptState :: IO ScriptState
 createEmptyScriptState = do
 	currentDir <- getCurrentDirectory
-	return ScriptState { output = " ", wd = currentDir, vartable = M.empty}
+	return ScriptState { output = "", wd = currentDir, vartable = M.empty}
 
 -- Runs a set of commands for a given command table. If this is the first
 -- command in the chain, it is given a FilePath and constructs a new, initially

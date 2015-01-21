@@ -182,20 +182,7 @@ cat args ss
 hexdump :: Command
 hexdump args ss = do
 	content <- BS.readFile (path ss (args!!0))
-	putStrLn $ simpleHex content
 	return $ writeError ss $ concat $ Prelude.map ((flip showHex) "") $ BS.unpack content
-	return ss
-
--- |'simpleHex' converts a 'ByteString' to a 'String' showing the octets
--- grouped in 32-bit words.
---
--- Sample output
---
--- @4b c1 ad 8a  5b 47 d7 57@
-simpleHex :: BS.ByteString -> String
-simpleHex c = concat
-          $ Prelude.map ((flip showHex) "")
-          $ BS.unpack c
 
 
 --create file path with respect to executing directory
