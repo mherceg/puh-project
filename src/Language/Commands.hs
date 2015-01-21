@@ -3,16 +3,16 @@ module Language.Commands where
 import Data.Map as M
 import Language.Exec
 import System.Directory
+import System.Exit
 -- A map of (command name, command pairs), used to abstract command
 -- execution and make adding new commands relatively easy
 commands :: M.Map String Command
 commands = M.fromList [
-    ("welcome", welcome),
     ("exit", exit),
     ("mv", move),
     ("cp", copy),
     ("cpdir", copyDir),
---    ("rm", remove),
+    ("rm", remove),
 --    ("rmdir", removeDir),
     ("create", create)
 --    ("mkdir", makeDir),
@@ -22,12 +22,10 @@ commands = M.fromList [
 --    ("cat", cat)
     ]
 
-welcome ::Command
-welcome _ ss = do
-	return ScriptState { output = "Wlecome", wd = wd ss, vartable = M.empty}
-
 exit :: Command
-exit = undefined
+exit _ _ = do
+	putStrLn "Thank you for using this shell!"
+	exitSuccess
 
 --Command for moving and renaming files
 move :: Command
@@ -52,10 +50,36 @@ move args ss
 				Prelude.mapM ((flip move) ss) [init args]
 				return ss
 
-
+--copy a file or copy one or multiple files in an existing directory
 copy :: Command
-copy = undefined
+copy args ss 
+	| length args == 2 = do
+		copyFile (path ss (args!!0)) (path ss (args!!1))
+		return ss
+	| otherwise = do
+		check <- doesDirectoryExist (path ss (last args))
+		if check then do
+			Prelude.mapM ((flip copy) ss) [init args]
+			return ss
+			else do 
+				return $ writeError ss ("cp: " ++ (last args) ++ " is not a valid copy target.")
 
+--remove one or more files
+remove :: Command
+remove args ss 
+	| Prelude.null args = do
+		return ss
+	| otherwise = do
+		let curr = head args
+		check <- doesFileExist (path ss curr)
+		if check then do
+			removeFile (path ss curr)
+			remove (tail args) ss
+			else do
+				remove (tail args) (writeError ss ("rm: " ++ curr ++ "is not a valid target for remove."))
+
+
+--
 copyDir :: Command
 copyDir = undefined
 

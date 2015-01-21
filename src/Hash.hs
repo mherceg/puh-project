@@ -16,6 +16,6 @@ runInteractive :: IO ()
 runInteractive = do
 	hSetBuffering stdout NoBuffering
 	state <- createEmptyScriptState
-	newState <- create ["proba"] state
+	newState <- exit ["proba"] state
 	putStrLn (output newState)
 	return ()
