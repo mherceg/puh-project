@@ -1,3 +1,8 @@
+module Language.Exec where 
+
+import Data.Map as M
+import Language.Expressions
+import System.Directory
 -- A model of a command which is waiting for arguments and a state to run
 type Command = [String] -> ScriptState -> IO ScriptState
 -- A table of variables, in fact a map of (Name, Value) pairs.
@@ -11,14 +16,21 @@ data ScriptState = ScriptState { output :: String
 , wd :: FilePath
 , vartable :: VarTable
 } deriving Show
+
+createEmptyScriptState :: IO ScriptState
+createEmptyScriptState = do
+	currentDir <- getCurrentDirectory
+	return ScriptState { output = " ", wd = currentDir, vartable = M.empty}
+
 -- Runs a set of commands for a given command table. If this is the first
 -- command in the chain, it is given a FilePath and constructs a new, initially
 -- blank, ScriptState. Otherwise, it is given the state as left by the previous
 -- command’s execution.
-runHashProgram :: CommandTable -> Either FilePath ScriptState -> [TLExpr]
--> IO ScriptState
+runHashProgram :: CommandTable -> Either FilePath ScriptState -> [TLExpr] -> IO ScriptState
+runHashProgram = undefined
 -- Calculates the result of a top-level command execution
 runTopLevel :: CommandTable -> ScriptState -> TLExpr -> IO ScriptState
+runTopLevel = undefined
 -- The rest of the module should consist of similar functions, calling each
 -- other so that each expression is parsed by a lower-level function and the
 -- result can be used in a higher-level function. The Command table and state

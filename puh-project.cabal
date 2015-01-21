@@ -19,5 +19,6 @@ executable puh-project
   main-is:  Main.hs           
   -- other-modules:       
   build-depends:       base ==4.6.*,
-                       directory ==1.*
+                       directory ==1.*,
+                       containers
   ghc-options: -Wall
