@@ -30,7 +30,8 @@ commands = M.fromList [
     ("ping", ping),
     ("chmod", chmod),
     ("void", voidCmd),
-    ("grep", grep)
+    ("grep", grep),
+    ("echo", echo)
     ]
 
 exit :: Command
@@ -213,9 +214,8 @@ grep args ss
 		else if (head args) == "-o" then do
 			mh <- match (args!!1) (args!!2)
 			return $ printAll ss $ replicate (length mh) (args!!1)
-			return ss
 		else if (head args) == "-n" then do
-			matched <- match (head args) (Language.Commands.path ss (last args))
+			matched <- match (args!!1) (Language.Commands.path ss (last args))
 			return $ printAll ss 
 				$ Prelude.map (\(a,b) -> (show a ++ b)) 
 				$ zip [1..] matched
@@ -235,8 +235,11 @@ match string file = do
 	content <- Prelude.readFile file
 	return $ Prelude.filter (\x -> isInfixOf string x) (lines content)
 
+echo :: Command 
+echo args ss = do
+	return $ printAll ss args
 
---Empty command
+--Empty command1
 voidCmd :: Command
 voidCmd _ ss = do
 	return ss
