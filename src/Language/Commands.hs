@@ -6,7 +6,7 @@ import Language.Exec
 import System.Directory
 import System.Exit
 import System.Process
---import Data.List (intercalate, unfoldr)
+import Data.List
 import Numeric (showHex)
 import Data.ByteString as BS (readFile, unpack)
 import System.Posix.Files
@@ -29,7 +29,8 @@ commands = M.fromList [
     ("hexdump", hexdump),
     ("ping", ping),
     ("chmod", chmod),
-    ("void", voidCmd)
+    ("void", voidCmd),
+    ("grep", grep)
     ]
 
 exit :: Command
@@ -170,7 +171,8 @@ ls args ss
 cd :: Command
 cd args ss 
 	| Prelude.null args = do
-		return ScriptState {output = output ss, wd = "~", vartable = vartable ss}
+		dr <- getHomeDirectory
+		return ScriptState {output = output ss, wd = dr, vartable = vartable ss}
 	| otherwise = do
 		return ScriptState {output = output ss, wd = (Language.Commands.path ss (args!!0)), vartable = vartable ss}
 
@@ -201,6 +203,53 @@ chmod args ss = do
 				(Prelude.map digitToInt p)))
 			[ownerReadMode, ownerWriteMode, ownerExecuteMode, groupReadMode, groupWriteMode, groupExecuteMode, otherReadMode, otherWriteMode, otherExecuteMode]
 
+--Grep command, supports -v(invert match) -i(ignore case) -o(only matching) -n(line numbers) and -c(count)
+grep :: Command
+grep args ss 
+	| length args > 2 =
+		if (head args) == "-v" then do
+			return ss
+		else if (head args) == "-i" then do
+			return ss
+		else if (head args) == "-o" then do
+			return ss
+		else if (head args) == "-n" then do
+			return ss
+		else if (head args) == "-c" then do
+			return ss
+		else do
+			return ss
+	| otherwise = do
+		matched <- match (head args) (last args)
+		return $ printAll ss matched
+
+
+{-grep args ss =
+	if length args > 2 then 
+		if (head args) == "-v" then do
+			return ss
+			else if (head args) == "-i" then do
+				return ss
+				else if (head args) == "-o" then do
+					return ss
+					else if (head args) == "-n" then do
+						return ss
+						else if (head args) == "-c" then do
+							return ss
+							else do
+								matched <- match (head args) (last args)
+								return $ printAll ss matched
+-}
+
+printAll ss' [] = ss'
+printAll ss' (x':xs) = printAll (writeError ss' (x'++"\n")) xs
+match :: String -> FilePath -> IO [String]
+match string file = do
+	content <- Prelude.readFile file
+	return $ Prelude.filter (\x -> isInfixOf string x) (lines content)
+
+
+--Empty command
 voidCmd :: Command
 voidCmd _ ss = do
 	return ss
