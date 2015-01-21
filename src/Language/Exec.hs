@@ -26,8 +26,8 @@ createEmptyScriptState = do
 -- command in the chain, it is given a FilePath and constructs a new, initially
 -- blank, ScriptState. Otherwise, it is given the state as left by the previous
 -- command’s execution.
-runHashProgram :: CommandTable -> Either FilePath ScriptState -> [TLExpr] -> IO ScriptState
-runHashProgram = undefined
+--runHashProgram :: CommandTable -> Either FilePath ScriptState -> [TLExpr] -> IO ScriptState
+--runHashProgram = undefined
 -- Calculates the result of a top-level command execution
 runTopLevel :: CommandTable -> ScriptState -> TLExpr -> IO ScriptState
 runTopLevel = undefined

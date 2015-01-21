@@ -5,10 +5,10 @@ module Language.Expressions where
 -- enough language sufficiently well.
 -- A command which performs something - can be a command that takes arguments
 -- or an assignment.
-data Cmd = Cmd { name :: Expr -- The command name (can be a variable)
-, args :: [Expr] -- The command arguments
-, inDir :: Maybe Expr -- A redirected input fp
-, outDir :: Maybe Expr -- A redirected output fp
+data Cmd = Cmd { name :: String -- The command name (can be a variable)
+, args :: [String] -- The command arguments
+, inDir :: Maybe String -- A redirected input fp
+, outDir :: Maybe String -- A redirected output fp
 , append :: Bool -- If redirected, is it appending?
 } | Assign { var :: Expr -- Assignment target
 , val :: Expr -- A value to assign to a variable

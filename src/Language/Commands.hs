@@ -56,7 +56,7 @@ move args ss
 		if not check then do
 			return (writeError ss ("mv: " ++ (last args) ++ " is not a valid target directory\n"))
 			else do
-				Prelude.mapM ((flip move) ss) [init args]
+				_ <- Prelude.mapM ((flip move) ss) [init args]
 				return ss
 
 --copy a file or copy one or multiple files in an existing directory
@@ -68,7 +68,7 @@ copy args ss
 	| otherwise = do
 		check <- doesDirectoryExist (path ss (last args))
 		if check then do
-			Prelude.mapM ((flip copy) ss) [init args]
+			_ <- Prelude.mapM ((flip copy) ss) [init args]
 			return ss
 			else do 
 				return $ writeError ss ("cp: " ++ (last args) ++ " is not a valid copy target.")
@@ -91,7 +91,7 @@ remove args ss
 --Creates one or more empty files
 create :: Command
 create args ss = do
-	mapM (\x -> createSingle (path ss x)) args
+	_ <- mapM (\x -> createSingle (path ss x)) args
 	return ss
 	where
 		createSingle arg = do
@@ -214,5 +214,5 @@ writeError ss message =
 --Perform an excellent ping command, all paramaters supported
 ping :: Command
 ping args ss = do
-	system ("ping " ++ (concat args))
+	_ <- system ("ping " ++ (concat args))
 	return ss
