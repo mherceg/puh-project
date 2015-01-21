@@ -9,7 +9,7 @@ The task of this project is to implement **Hash**, a simple shell programmed in 
 - [x] Basic language structures defined
 - [x] Structure execution
 - [x] Parsing
-- [ ] Basic Functionality (*80 %*)
+- [x] Basic Functionality (*80 %*)
     - [x] Abstracted command calling (*2 pts*)
     - [ ] Conditional branching (*6 pts*)
     - [x] File manipulation (*3 pts*)
@@ -20,8 +20,8 @@ The task of this project is to implement **Hash**, a simple shell programmed in 
     - [ ] Variables (*3 pts*)
     - [x] `cat` command (*2 pts*)
     - [x] `echo` command (*3 pts*)
-- [ ] Advanced functionality (*20% for 10 pts*)
-    - [ ] `grep` (*4 pts*)
+- [x] Advanced functionality (*20% for 10 pts*)
+    - [x] `grep` (*4 pts*)
     - [ ] Piping (*5 pts*)
     - [x] `chmod` (*3 pts*)
     - [ ] Glob expansion (*5 pts*)
@@ -29,4 +29,4 @@ The task of this project is to implement **Hash**, a simple shell programmed in 
     - [ ] Forking (*8 pts*)
     - [x] `hexdump` (*3 pts*)
     - [ ] .hashrc (*2 pts*)
-    - [ ] `ping` (*3 pts*)
+    - [x] `ping` (*3 pts*)
