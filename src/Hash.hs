@@ -12,7 +12,7 @@ import Control.Monad
 runScript :: FilePath -> IO ()
 runScript fp = do
 	input <- readFile fp
-	let coms = map createExpr (lines input) 
+	let coms = map createExpr (lines (input ++ "\nexit") ) 
 	state <- createEmptyScriptState
 	foldM (runTopLevel commands) state coms
 	return ()
@@ -22,17 +22,20 @@ runInteractive :: IO ()
 runInteractive = do
 	hSetBuffering stdout NoBuffering
 	state <- createEmptyScriptState
+	putStr "Hash> "
 	line <- getLine
 	runOne (createExpr line) state
 	where
 		runOne com ss = do
 			newState <- runTopLevel commands ss com
+			putStr "Hash> "
 			line <- getLine
 			runOne (createExpr line) newState
 
 createExpr :: String -> TLExpr
 createExpr input = 
 	let ws = words $ takeWhile(\x -> x /= '#') input in
+	if null ws then Emptyy else
 		TLCmd Cmd { name = head ws
 			, args = filter (\x -> head x /= '<' && head x /= '>') (tail ws)
 			, inDir = isValid $ filter (\x -> head x == '<') (tail ws)

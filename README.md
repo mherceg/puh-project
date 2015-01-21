@@ -15,7 +15,7 @@ The task of this project is to implement **Hash**, a simple shell programmed in 
     - [x] File manipulation (*3 pts*)
     - [x] Directory manipulation (*3 pts*)
     - [x] Filesystem navigation (*3 pts*)
-    - [ ] Stream redirection (*5 pts*)
+    - [x] Stream redirection (*5 pts*)
     - [x] Comments (*2 pts*)
     - [ ] Variables (*3 pts*)
     - [x] `cat` command (*2 pts*)

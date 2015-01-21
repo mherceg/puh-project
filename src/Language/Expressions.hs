@@ -12,7 +12,7 @@ data Cmd = Cmd { name :: String -- The command name (can be a variable)
 , append :: Bool -- If redirected, is it appending?
 } | Assign { var :: Expr -- Assignment target
 , val :: Expr -- A value to assign to a variable
-} deriving Show
+} deriving (Show,Eq)
 -- A bottom-level expression
 data Expr = Var String -- A named variable 
 	| Str String -- A mere string, the peasant of expressions
@@ -47,5 +47,5 @@ data Conditional = If { cond :: Pred -- Predicate to satisfy
 -- A top-level expression, wrapping either a conditional expression or a
 -- command
 data TLExpr = TLCmd Cmd
-	| TLCnd Conditional
-	deriving Show
+	| Emptyy
+	deriving (Show, Eq)

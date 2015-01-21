@@ -28,7 +28,8 @@ commands = M.fromList [
     ("cat", cat),
     ("hexdump", hexdump),
     ("ping", ping),
-    ("chmod", chmod)
+    ("chmod", chmod),
+    ("void", voidCmd)
     ]
 
 exit :: Command
@@ -45,14 +46,14 @@ move [_] ss = move [] ss
 
 move args ss
 	| length args == 2 = do
-		check <- doesDirectoryExist (path ss (args !! 1))
+		check <- doesDirectoryExist (Language.Commands.path ss (args !! 1))
 		if check then 
-				renameFile (path ss (args !! 0)) ((path ss (args !! 1)) ++ "/" ++ (args!!0))
+				renameFile (Language.Commands.path ss (args !! 0)) ((Language.Commands.path ss (args !! 1)) ++ "/" ++ (args!!0))
 			else
-				renameFile (path ss (args !! 0)) (path ss (args !! 1))
+				renameFile (Language.Commands.path ss (args !! 0)) (Language.Commands.path ss (args !! 1))
 		return ss
 	| otherwise = do
-		check <- doesDirectoryExist (path ss (last args))
+		check <- doesDirectoryExist (Language.Commands.path ss (last args))
 		if not check then do
 			return (writeError ss ("mv: " ++ (last args) ++ " is not a valid target directory\n"))
 			else do
@@ -63,10 +64,10 @@ move args ss
 copy :: Command
 copy args ss 
 	| length args == 2 = do
-		copyFile (path ss (args!!0)) (path ss (args!!1))
+		copyFile (Language.Commands.path ss (args!!0)) (Language.Commands.path ss (args!!1))
 		return ss
 	| otherwise = do
-		check <- doesDirectoryExist (path ss (last args))
+		check <- doesDirectoryExist (Language.Commands.path ss (last args))
 		if check then do
 			_ <- Prelude.mapM ((flip copy) ss) [init args]
 			return ss
@@ -80,9 +81,9 @@ remove args ss
 		return ss
 	| otherwise = do
 		let curr = head args
-		check <- doesFileExist (path ss curr)
+		check <- doesFileExist (Language.Commands.path ss curr)
 		if check then do
-			removeFile (path ss curr)
+			removeFile (Language.Commands.path ss curr)
 			remove (tail args) ss
 			else do
 				remove (tail args) (writeError ss ("rm: " ++ curr ++ "is not a valid target for remove."))
@@ -91,7 +92,7 @@ remove args ss
 --Creates one or more empty files
 create :: Command
 create args ss = do
-	_ <- mapM (\x -> createSingle (path ss x)) args
+	_ <- mapM (\x -> createSingle (Language.Commands.path ss x)) args
 	return ss
 	where
 		createSingle arg = do
@@ -103,7 +104,7 @@ cpDir args ss
 	| length args == 1 = do
 		return ss
 	| otherwise = do
-		let curr = path ss (head args)
+		let curr = Language.Commands.path ss (head args)
 		check <- doesDirectoryExist curr
 		if not check then do
 			cpDir (tail args) (writeError ss ("cpdir: " ++ (head args) ++ "is not a valid cpdir target"))
@@ -112,7 +113,7 @@ cpDir args ss
 				if not (Prelude.null content) then
 					 cpDir (tail args) (writeError ss ("cpdir: " ++ (head args) ++ "is not a valid cpdir target"))
 					 else do
-					 	createDirectory ((path ss (last args)) ++ "/" ++ (head args))
+					 	createDirectory ((Language.Commands.path ss (last args)) ++ "/" ++ (head args))
 					 	rmDir (tail args) ss
 
 --remove one or more empty directories
@@ -121,7 +122,7 @@ rmDir args ss
 	| Prelude.null args = do
 		return ss
 	| otherwise = do
-		let curr = path ss (head args)
+		let curr = Language.Commands.path ss (head args)
 		check <- doesDirectoryExist curr
 		if not check then do
 			rmDir (tail args) (writeError ss ("rmdir: " ++ (head args) ++ "is not a valid rmdir target"))
@@ -139,7 +140,7 @@ mkDir args ss
 	| Prelude.null args = do
 		return ss
 	| otherwise = do
-		createDirectory (path ss (head args))
+		createDirectory (Language.Commands.path ss (head args))
 		mkDir (tail args) ss
 
 --Print working directory
@@ -152,7 +153,7 @@ pwd _ ss = do
 ls :: Command
 ls args ss
 	| Prelude.null args = ls' (wd ss)
-	| otherwise = ls' (path ss (args !! 0))
+	| otherwise = ls' (Language.Commands.path ss (args !! 0))
 	where
 		ls' x = do
 			check <- doesDirectoryExist x
@@ -163,7 +164,7 @@ ls args ss
 					return $ printAll ss files
 					where
 						printAll ss' [] = ss'
-						printAll ss' (x':xs) = printAll (writeError ss' x') xs
+						printAll ss' (x':xs) = printAll (writeError ss' (x'++"\n")) xs
 
 --change directory
 cd :: Command
@@ -171,7 +172,7 @@ cd args ss
 	| Prelude.null args = do
 		return ScriptState {output = output ss, wd = "~", vartable = vartable ss}
 	| otherwise = do
-		return ScriptState {output = output ss, wd = (path ss (args!!0)), vartable = vartable ss}
+		return ScriptState {output = output ss, wd = (Language.Commands.path ss (args!!0)), vartable = vartable ss}
 
 --concatenate files and print to standard output
 cat :: Command
@@ -179,20 +180,20 @@ cat args ss
 	| Prelude.null args = do
 		return ss
 	| otherwise = do
-		content <- Prelude.readFile (path ss (head args))
+		content <- Prelude.readFile (Language.Commands.path ss (head args))
 		cat (tail args) (writeError ss content)
 
 --outputs a file in hexadecimal format
 hexdump :: Command
 hexdump args ss = do
-	content <- BS.readFile (path ss (args!!0))
+	content <- BS.readFile (Language.Commands.path ss (args!!0))
 	return $ writeError ss $ concat $ Prelude.map ((flip showHex) "") $ BS.unpack content
 
 --change permissions for a file, args should be octal permissions for owner, group, others
 chmod :: Command
 chmod args ss = do
 	let perms = Prelude.foldr unionFileModes nullFileMode (analyze (args!!0))
-	setFileMode (path ss (args!!1)) perms
+	setFileMode (Language.Commands.path ss (args!!1)) perms
 	return ss
 	where
 		analyze p = Prelude.map (snd) $ Prelude.filter (\(a,_) -> a /= 0) 
@@ -200,6 +201,9 @@ chmod args ss = do
 				(Prelude.map digitToInt p)))
 			[ownerReadMode, ownerWriteMode, ownerExecuteMode, groupReadMode, groupWriteMode, groupExecuteMode, otherReadMode, otherWriteMode, otherExecuteMode]
 
+voidCmd :: Command
+voidCmd _ ss = do
+	return ss
 
 --create file path with respect to executing directory
 path :: ScriptState -> String -> FilePath

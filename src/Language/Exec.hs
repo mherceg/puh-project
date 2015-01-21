@@ -22,18 +22,30 @@ createEmptyScriptState = do
 	currentDir <- getCurrentDirectory
 	return ScriptState { output = "", wd = currentDir, vartable = M.empty}
 
--- Runs a set of commands for a given command table. If this is the first
--- command in the chain, it is given a FilePath and constructs a new, initially
--- blank, ScriptState. Otherwise, it is given the state as left by the previous
--- command’s execution.
---runHashProgram :: CommandTable -> Either FilePath ScriptState -> [TLExpr] -> IO ScriptState
---runHashProgram = undefined
--- Calculates the result of a top-level command execution
+
 runTopLevel :: CommandTable -> ScriptState -> TLExpr -> IO ScriptState
-runTopLevel = undefined
--- The rest of the module should consist of similar functions, calling each
--- other so that each expression is parsed by a lower-level function and the
--- result can be used in a higher-level function. The Command table and state
--- are passed around as necessary to evaluate commands, assignments and
--- variable substitution. A better way to pass around variables would be to
--- use the State monad or even the StateT monad transformer to wrap IO into it.
+runTopLevel table ss expr = do
+	if (expr == Emptyy ) then do
+		return ss
+		else do
+			let cmd = unmaybe (M.lookup (name (unwrap expr)) table) 
+			newState <- (cmd (args (unwrap expr)) ss)
+			case (outDir (unwrap expr)) of
+				Nothing -> putStrLn (output newState)
+				(Just x) -> if append (unwrap expr) then do
+					appendFile (Language.Exec.path newState x) (output newState)
+					else do
+						writeFile (Language.Exec.path newState x) (output newState)
+			return ScriptState { output = "", wd = wd newState, vartable = vartable newState}
+
+	where
+		unwrap (TLCmd cm) = cm
+		unwrap _ = Cmd { name = "void", args = [], inDir = Nothing, outDir = Nothing, append = False}
+		unmaybe :: Maybe Command -> Command
+		unmaybe (Just x) = x
+		unmaybe Nothing = unmaybe (M.lookup "void" table)
+
+
+--create file path with respect to executing directory
+path :: ScriptState -> String -> FilePath
+path ss nmm = wd ss ++ "/" ++ nmm
